@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IMEI Scanner - Telco Inventory</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>IMEI Scanner</h1>
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+        <div class="controls">
+            <button id="startCamera">Start Camera</button>
+            <button id="capturePhoto">Capture Photo</button>
+            <button id="stopCamera">Stop Camera</button>
+        </div>
+        <div class="results">
+            <h2>Detected IMEIs</h2>
+            <textarea id="imeiOutput" readonly></textarea>
+            <button id="copyButton">Copy All IMEIs</button>
+            <button id="emailButton">Email Results</button>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.19.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

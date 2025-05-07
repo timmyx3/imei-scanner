@@ -7,16 +7,12 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div id="homePage" class="container">
         <h1>IMEI Scanner</h1>
-        <div class="camera-container">
-            <video id="video" autoplay playsinline></video>
-            <canvas id="canvas" style="display: none;"></canvas>
-        </div>
-        <div class="controls">
-            <button id="startCamera">Start Camera</button>
-            <button id="capturePhoto">Capture Photo</button>
-            <button id="stopCamera">Stop Camera</button>
+        <div class="upload-section">
+            <button id="openCamera">Take Photo/Video</button>
+            <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;">
+            <label for="fileInput" class="upload-button">Upload Photo/Video</label>
         </div>
         <div class="results">
             <h2>Detected IMEIs</h2>
@@ -25,6 +21,26 @@
             <button id="emailButton">Email Results</button>
         </div>
     </div>
+
+    <div id="cameraPage" class="container" style="display: none;">
+        <div class="camera-controls">
+            <button id="backButton">Back</button>
+            <button id="captureButton">Capture</button>
+            <button id="switchCamera">Switch Camera</button>
+        </div>
+        <div class="camera-container">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+        </div>
+        <div class="camera-settings">
+            <select id="resolutionSelect">
+                <option value="1920x1080">1080p (1920x1080)</option>
+                <option value="1280x720">720p (1280x720)</option>
+                <option value="640x480">480p (640x480)</option>
+            </select>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.19.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.2/dist/coco-ssd.min.js"></script>
     <script src="app.js"></script>

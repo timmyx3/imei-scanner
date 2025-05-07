@@ -25,6 +25,36 @@ h1 {
     margin-bottom: 20px;
 }
 
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.upload-button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: inline-block;
+    text-align: center;
+}
+
+.upload-button:hover {
+    background-color: #45a049;
+}
+
+.camera-controls {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+    justify-content: space-between;
+}
+
 .camera-container {
     position: relative;
     margin: 20px 0;
@@ -39,10 +69,16 @@ h1 {
     object-fit: contain;
 }
 
-.controls {
+.camera-settings {
     display: flex;
     gap: 10px;
-    margin: 20px 0;
+    margin: 10px 0;
+}
+
+#resolutionSelect {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
 
 button {
@@ -81,4 +117,14 @@ button:hover {
 
 #copyButton:hover, #emailButton:hover {
     background-color: #1976D2;
+}
+
+/* Hide scrollbar for textarea */
+#imeiOutput::-webkit-scrollbar {
+    display: none;
+}
+
+#imeiOutput {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

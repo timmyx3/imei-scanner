@@ -7,14 +7,19 @@ class IMEIScanner {
         this.imeis = new Set();
         this.model = null;
         this.stream = null;
+        this.currentCamera = 'environment';
+        this.currentResolution = '1920x1080';
 
         this.initializeEventListeners();
     }
 
     async initializeEventListeners() {
-        document.getElementById('startCamera').addEventListener('click', () => this.startCamera());
-        document.getElementById('capturePhoto').addEventListener('click', () => this.capturePhoto());
-        document.getElementById('stopCamera').addEventListener('click', () => this.stopCamera());
+        document.getElementById('openCamera').addEventListener('click', () => this.openCameraPage());
+        document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileUpload(e));
+        document.getElementById('captureButton').addEventListener('click', () => this.capturePhoto());
+        document.getElementById('backButton').addEventListener('click', () => this.closeCameraPage());
+        document.getElementById('switchCamera').addEventListener('click', () => this.switchCamera());
+        document.getElementById('resolutionSelect').addEventListener('change', (e) => this.setResolution(e.target.value));
         document.getElementById('copyButton').addEventListener('click', () => this.copyIMEIs());
         document.getElementById('emailButton').addEventListener('click', () => this.emailResults());
 
@@ -24,13 +29,24 @@ class IMEIScanner {
 
     async loadModel() {
         // Load a pre-trained model for IMEI detection
-        // Note: In a production environment, you would train a custom model specifically for IMEI detection
-        // For now, we'll use a general object detection model and implement custom IMEI pattern recognition
         this.model = await cocoSsd.load();
+    }
+
+    openCameraPage() {
+        document.getElementById('homePage').style.display = 'none';
+        document.getElementById('cameraPage').style.display = 'block';
+        this.startCamera();
+    }
+
+    closeCameraPage() {
+        this.stopCamera();
+        document.getElementById('homePage').style.display = 'block';
+        document.getElementById('cameraPage').style.display = 'none';
     }
 
     async startCamera() {
         try {
+            const [width, height] = this.currentResolution.split('x').map(Number);
             this.stream = await navigator.mediaDevices.getUserMedia({
                 video: {
                     facingMode: 'environment',
@@ -65,6 +81,95 @@ class IMEIScanner {
 
         // Process image for IMEI detection
         await this.processImage(imageData);
+
+        // After processing, go back to home page
+        this.closeCameraPage();
+    }
+
+    async handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        try {
+            if (file.type.startsWith('image/')) {
+                // Handle image file
+                const img = new Image();
+                img.onload = () => this.processImageFromCanvas(img);
+                img.src = URL.createObjectURL(file);
+            } else if (file.type.startsWith('video/')) {
+                // Handle video file
+                const video = document.createElement('video');
+                video.onloadedmetadata = () => {
+                    video.play();
+                    // Capture frame from video
+                    setTimeout(() => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        this.processImage(ctx.getImageData(0, 0, canvas.width, canvas.height));
+                    }, 1000); // Wait 1 second to ensure video is playing
+                };
+                video.src = URL.createObjectURL(file);
+            }
+        } catch (error) {
+            console.error('Error processing file:', error);
+            alert('Error processing file. Please try again.');
+        }
+    }
+
+    async processImageFromCanvas(canvas) {
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        await this.processImage(imageData);
+    }
+
+    async processImage(imageData) {
+        try {
+            const tensor = tf.browser.fromPixels(imageData);
+            const predictions = await this.model.detect(tensor);
+            
+            for (const prediction of predictions) {
+                if (prediction.class === 'text') {
+                    const textRegion = this.ctx.getImageData(
+                        prediction.bbox[0],
+                        prediction.bbox[1],
+                        prediction.bbox[2],
+                        prediction.bbox[3]
+                    );
+                    
+                    const text = await this.extractTextFromImage(textRegion);
+                    const imeiPattern = /\d{15}/g;
+                    const matches = text.match(imeiPattern);
+                    
+                    if (matches) {
+                        matches.forEach(imei => {
+                            this.imeis.add(imei);
+                        });
+                    }
+                }
+            }
+            
+            this.updateIMEIOutput();
+            
+        } catch (error) {
+            console.error('Error processing image:', error);
+        }
+    }
+
+    switchCamera() {
+        this.currentCamera = this.currentCamera === 'environment' ? 'user' : 'environment';
+        this.stopCamera();
+        this.startCamera();
+    }
+
+    setResolution(resolution) {
+        this.currentResolution = resolution;
+        if (this.stream) {
+            this.stopCamera();
+            this.startCamera();
+        }
     }
 
     async processImage(imageData) {
